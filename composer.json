@@ -1,0 +1,25 @@
+{
+    "name": "dns/cakephp-sockets",
+    "description": "Socket adapters package for CakePHP 3",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "authors": [
+        {
+            "name": "Steve Found",
+            "email": "steve@dnsmedia.co.uk"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.9",
+        "cakephp/cakephp": "~3.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^4.8",
+        "mockery/mockery": "^0.9.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Dns\\Socket\\": "src/"
+        }
+    }
+}
