@@ -40,6 +40,7 @@ class CachedSocketTest extends \PHPUnit_Framework_TestCase
         $key = md5($url);
 
         $sock = new CachedResponseSocket($firstSocket, '__socket__');
+        $sock->setKey($key);
         $response = $sock->get($url);
         $str = Cache::read($key, '__socket__');
         $this->assertNotNull($str);
@@ -47,6 +48,7 @@ class CachedSocketTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($str, "GET first socket");
 
         $sock = new CachedResponseSocket($secondSocket, '__socket__');
+        $sock->setKey($key);
         $response = $sock->get($url);
         $str = Cache::read($key, '__socket__');
         $this->assertNotNull($str);
@@ -74,6 +76,7 @@ class CachedSocketTest extends \PHPUnit_Framework_TestCase
         $key = md5($url);
 
         $sock = new CachedResponseSocket($firstSocket, '__socket__');
+        $sock->setKey($key);
         $response = $sock->get($url);
         $str = Cache::read($key, '__socket__');
         $this->assertNotNull($str);
@@ -85,6 +88,7 @@ class CachedSocketTest extends \PHPUnit_Framework_TestCase
         $this->assertFalse($str);
 
         $sock = new CachedResponseSocket($secondSocket, '__socket__');
+        $sock->setKey($key);
         $response = $sock->get($url);
         $str = Cache::read($key, '__socket__');
         $this->assertNotNull($str);

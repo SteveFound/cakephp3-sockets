@@ -92,17 +92,17 @@ $cache = new CachedResponseSocket($http, '__socket__');
  * The functions get(), put(), post() and delete() will now return the body of a response if
  * the request is successful or false if it errors.
  */
+$cache->setKey('a_unique_key_for_this_request-eg_md5($url)');
 $body = $cache->get('http://example.com/search', ['q' => 'widget']);
 if ($body) {
 	// Process response body
 }
 ```
 The code above will make a get request to 'http://example.com/search?q=widget'. If a valid response is
-returned, the body of the response will cached in the CACHE directory for one hour. The cache file will be
-called '\_\_socket\_\_' . md5('gethttp://example.com/search?q=widget'). Note that 'get' is prepended to the URL
-so that get, post, put and delete requests will all be cached in different files.
+returned, the body of the response will cached in the CACHE directory for one hour. The cached file will be
+stored under whatever key was supplied by calling setKey().
 
-If another get request is issued to the same URL within the next hour, the cached response will be returned
+If another get request is issued usinf the same key within the next hour, the cached response will be returned
 and the request to the server will never be made.
 
 ## ThrottledRequestSocket
@@ -145,53 +145,3 @@ if ($body) {
 
 The code above will make a get request to 'http://example.com/search?q=widget' with the guarantee that
 not more than one request per second will originate from your server.
-
-### Amazon Product Advertising
-
-The Amazon Product Advertising API was the API that prompted me to create this library. The usage of both
-the Caching and Throttling sockets make it an ideal fit since if more than on user wants to view the same
-Amazon item on your server, they will be accessing a cached item of it and if there is no cached version,
-it will not hit the Amazon service with more than one request per second.
-
-To achieve this, we need to create an CakeHttpClientSocket, throttle it with ThrottledRequestSocket and
-Cache the throttled socket with the CachedResponseSocket. It's vital that we do this correctly or we will
-be throttling a cached socket which will cache the response but limit access to the cache to once a second.
-Not what we desire in this instance.
-
-so we do...
-
-```php
-use Cake\Cache\Cache;
-use Cake\Network\Http\Client;
-use Dns\Socket\CakeHttpClientSocket;
-use Dns\Socket\ThrottledRequestSocket;
-use Dns\Socket\CachedResponseSocket;
-
-
-/* Cache configuration */
-Cache::config('__socket__', [
-    'className' => 'File',
-    'duration' => '+1 hours',
-    'path' => CACHE,
-    'prefix' => '__socket__'
-]);
-
-
-/* Create a CakeHttpClientSocket() to wrap the client */
-$http = new CakeHttpClientSocket(new Client());
-
-/* Create a throttled socket */
-$throttled = new ThrottledRequestSocket($http, CACHE . '/throttle.dat');
-
-/* Create a cached socket */
-$cache = new CachedResponseSocket($throttled, '__socket__');
-
-/*
- * The functions get(), put(), post() and delete() will now return the body of a response if
- * the request is successful or false if it errors.
- */
-$body = $cache->get('http://amazon.co.uk?lots&of&parameters');
-if ($body) {
-	// Process response body
-}
-```

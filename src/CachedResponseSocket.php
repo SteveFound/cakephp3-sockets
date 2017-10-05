@@ -15,13 +15,13 @@ class CachedResponseSocket extends AbstractSocket implements SocketInterface
      * The cache key
      * @var string key
      */
-    private $key;
+    protected $key;
 
     /**
      * Config settings key
      * @var string
      */
-    protected $config;
+    protected $configKey;
 
     /**
      * Create the object and assign a cache key.
@@ -46,6 +46,24 @@ class CachedResponseSocket extends AbstractSocket implements SocketInterface
     }
 
     /**
+     * Set the key
+     * @param string $key
+     */
+    public function setKey($key)
+    {
+        $this->key = $key;
+    }
+
+    /**
+     * Return the key
+     * @param string $key
+     */
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    /**
      * Discard the cached data
      * @return void
      */
@@ -64,7 +82,6 @@ class CachedResponseSocket extends AbstractSocket implements SocketInterface
      */
     public function put($uri, array $data = [], array $options = [])
     {
-        $this->key = $this->buildKey('put', $uri, $data, $options);
         $response = Cache::read($this->key, $this->configKey);
         if (!$response) {
             $response = parent::put($uri, $data, $options);
@@ -87,7 +104,6 @@ class CachedResponseSocket extends AbstractSocket implements SocketInterface
      */
     public function delete($uri, array $data = [], array $options = [])
     {
-        $this->key = $this->buildKey('delete', $uri, $data, $options);
         $response = Cache::read($this->key, $this->configKey);
         if (!$response) {
             $response = parent::delete($uri, $data, $options);
@@ -110,7 +126,6 @@ class CachedResponseSocket extends AbstractSocket implements SocketInterface
      */
     public function get($uri, array $data = [], array $options = [])
     {
-        $this->key = $this->buildKey('get', $uri, $data, $options);
         $response = Cache::read($this->key, $this->configKey);
         if (!$response) {
             $response = parent::get($uri, $data, $options);
@@ -133,7 +148,6 @@ class CachedResponseSocket extends AbstractSocket implements SocketInterface
      */
     public function post($uri, array $data = [], array $options = [])
     {
-        $this->key = $this->buildKey('post', $uri, $data, $options);
         $response = Cache::read($this->key, $this->configKey);
         if (!$response) {
             $response = parent::post($uri, $data, $options);
@@ -144,46 +158,5 @@ class CachedResponseSocket extends AbstractSocket implements SocketInterface
             }
         }
         return $response;
-    }
-
-    /**
-     * Generate a URL based on the scoped client options. (Taken from Cake\Network\Http\Client)
-     *
-     * @param string $action    The name of the action being performed
-     * @param string $url       Either a full URL or just the path.
-     * @param string|array $query The query data for the URL.
-     * @param array $options    The config options stored with Client::config()
-     * @return string An md5 encoded key for the request
-     */
-    protected function buildKey($action, $url, $query = [], $options = [])
-    {
-        if (empty($options) && empty($query)) {
-            return md5($url);
-        }
-        if ($query) {
-            $q = (strpos($url, '?') === false) ? '?' : '&';
-            $url .= $q;
-            $url .= is_string($query) ? $query : http_build_query($query);
-        }
-        if (preg_match('#^https?://#', $url)) {
-            $out = $url;
-        } else {
-            $defaults = [
-                'host' => null,
-                'port' => null,
-                'scheme' => 'http',
-            ];
-            $options += $defaults;
-            $defaultPorts = [
-                'http' => 80,
-                'https' => 443
-            ];
-            $out = $options['scheme'] . '://' . $options['host'];
-            if ($options['port'] && $options['port'] != $defaultPorts[$options['scheme']]) {
-                $out .= ':' . $options['port'];
-            }
-            $out .= '/' . ltrim($url, '/');
-        }
-        return md5($action . $out);
     }
 }
